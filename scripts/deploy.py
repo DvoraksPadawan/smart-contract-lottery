@@ -31,16 +31,10 @@ class Lottery_class:
         tx.wait(10)
         print("subscripton:", interface.VRFCoordinatorV2Interface(self._vrf_coordinator2).getSubscription(self.subscriptionId))
 
-    def fund_with_link(self, account = None, amount = 0):
-        account = account if account else helpful_scripts.get_account()
-        #if (amount == 0): amount = self.link_fee
-        amount = amount if amount > 0 else 2 * self.link_fee
-        interface.LinkTokenInterface(self._link).transfer(self.lottery.address, amount, {"from" : account})
-
     def request_random_number(self, account = None):
         account = account if account else helpful_scripts.get_account()
         tx = self.lottery.generateRandomNumber( {"from" : account})
-        tx.wait(1)
+        tx.wait(10)
         print("random number:", self.lottery.getLastRandomNumber())
         return self.lottery.getLastRandomNumber()
 
