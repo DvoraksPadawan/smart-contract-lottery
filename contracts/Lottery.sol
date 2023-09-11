@@ -6,6 +6,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@zeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "../interfaces/LinkTokenInterface.sol";
 
 
 contract Lottery is VRFConsumerBaseV2, Ownable {
@@ -23,6 +24,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     VRFCoordinatorV2Interface vrfCoordinatorV2;
 
+    LinkTokenInterface linkToken;
+
     //address owner;
 
     enum LotteryState {
@@ -38,7 +41,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         //uint64 _subscriptionId,
         uint16 _requestConfirmations,
         uint32 _callbackGasLimit,
-        uint32 _numWords
+        uint32 _numWords,
+        address _link
     ) VRFConsumerBaseV2(_vrfCoordinatorV2) {
         priceFeed = AggregatorV3Interface(_priceFeed);
 
@@ -53,6 +57,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
 
         createNewSubscription();
+
+        linkToken = LinkTokenInterface(_link);
 
         //owner = msg.sender;
     }
@@ -102,7 +108,17 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     }
     function cancelSubscription() external onlyOwner {
         // Cancel the subscription and send the remaining LINK to a wallet address.
-        COORDINATOR.cancelSubscription(subscriptionId, owner);
+        vrfCoordinatorV2.cancelSubscription(subscriptionId, owner());
         subscriptionId = 0;
+    }
+    function getSubscriptionId() public view returns(uint64){
+        return subscriptionId;
+    }
+    function topUpSubscription(uint256 amount) external onlyOwner {
+        linkToken.transferAndCall(
+            address(vrfCoordinatorV2),
+            amount,
+            abi.encode(subscriptionId)
+        );
     }
 }
