@@ -35,5 +35,9 @@ def get_callbackGasLimit():
 def get_numWords():
     if network.show_active() in ACTIVE_NETWORKS:
         return config["networks"][network.show_active()]["numWords"]
+    
+def get_link_address():
+    if network.show_active() in ACTIVE_NETWORKS:
+        return config["networks"][network.show_active()]["link"]
 
     

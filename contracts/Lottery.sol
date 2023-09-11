@@ -23,6 +23,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     VRFCoordinatorV2Interface vrfCoordinatorV2;
 
+    //address owner;
+
     enum LotteryState {
         OPEN,
         CLOSED,
@@ -33,7 +35,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         address _priceFeed,
         address _vrfCoordinatorV2,
         bytes32 _keyHash,
-        uint64 _subscriptionId,
+        //uint64 _subscriptionId,
         uint16 _requestConfirmations,
         uint32 _callbackGasLimit,
         uint32 _numWords
@@ -41,12 +43,18 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         priceFeed = AggregatorV3Interface(_priceFeed);
 
         keyHash = _keyHash;
-        subscriptionId = _subscriptionId;
+        //subscriptionId = _subscriptionId;
+        //we will create new subscription!
+        //subscriptionId = 0;
         requestConfirmations = _requestConfirmations;
         callbackGasLimit = _callbackGasLimit;
         numWords = _numWords;
 
         vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
+
+        createNewSubscription();
+
+        //owner = msg.sender;
     }
     
      function fulfillRandomWords(
@@ -54,6 +62,10 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         uint256[] memory _randomWords
     ) internal override {
         randomNumber = _randomWords[0];
+    }
+
+    function setSubscription(uint64 _subscriptionId) public onlyOwner() {
+        subscriptionId = _subscriptionId;
     }
 
     function generateRandomNumber()
@@ -81,5 +93,16 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     function getLastRandomNumber() public view returns(uint256) {
         return randomNumber;
+    }
+
+    function createNewSubscription() private onlyOwner {
+        subscriptionId = vrfCoordinatorV2.createSubscription();
+        // Add this contract as a consumer of its own subscription.
+        vrfCoordinatorV2.addConsumer(subscriptionId, address(this));
+    }
+    function cancelSubscription() external onlyOwner {
+        // Cancel the subscription and send the remaining LINK to a wallet address.
+        COORDINATOR.cancelSubscription(subscriptionId, owner);
+        subscriptionId = 0;
     }
 }
