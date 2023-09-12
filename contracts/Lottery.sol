@@ -26,6 +26,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     LinkTokenInterface linkToken;
 
+    uint256 _requestId;
+
     //address owner;
 
     enum LotteryState {
@@ -83,6 +85,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
             callbackGasLimit,
             numWords
         );
+        _requestId = requestId;
         return requestId;
     }
 
@@ -129,5 +132,9 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     function entryLottery() public payable minimalEntryFee() {
         //users.
+    }
+
+    function getRequestId() public view returns(uint256) {
+        return _requestId;
     }
 }
