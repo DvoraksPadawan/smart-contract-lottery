@@ -106,7 +106,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         // Add this contract as a consumer of its own subscription.
         vrfCoordinatorV2.addConsumer(subscriptionId, address(this));
     }
-    function cancelSubscription() external onlyOwner {
+    function cancelSubscription() public onlyOwner {
         // Cancel the subscription and send the remaining LINK to a wallet address.
         vrfCoordinatorV2.cancelSubscription(subscriptionId, owner());
         subscriptionId = 0;

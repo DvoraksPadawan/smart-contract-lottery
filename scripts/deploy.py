@@ -80,7 +80,7 @@ class Lottery_class:
         tx = self.link.approve(self.lottery.address, amount, {"from" : account})
         tx.wait(5)
         print("approved")
-        tx = self.link.transferFrom(account, self.lottery.address, amount, {"from" : account})
+        tx = self.link.transfer(self.lottery.address, amount, {"from" : account})
         tx.wait(5)
         print("contract funded")
         tx = self.lottery.topUpSubscription(amount, {"from" : account})
