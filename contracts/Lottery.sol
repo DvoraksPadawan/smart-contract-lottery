@@ -5,7 +5,7 @@ pragma solidity >=0.8.2 <0.9.0;
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@zeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "../interfaces/VRFCoordinatorV2Interface.sol";
 import "../interfaces/LinkTokenInterface.sol";
 
 
@@ -106,7 +106,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         // Add this contract as a consumer of its own subscription.
         vrfCoordinatorV2.addConsumer(subscriptionId, address(this));
     }
-    function cancelSubscription() public onlyOwner {
+    function cancelSubscription() external onlyOwner {
         // Cancel the subscription and send the remaining LINK to a wallet address.
         vrfCoordinatorV2.cancelSubscription(subscriptionId, owner());
         subscriptionId = 0;
@@ -120,5 +120,14 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
             amount,
             abi.encode(subscriptionId)
         );
+    }
+
+    modifier minimalEntryFee {
+        require(msg.value >= getFeeInEthWei(), "send higher entry fee!");
+        _;
+    }
+
+    function entryLottery() public payable minimalEntryFee() {
+        //users.
     }
 }

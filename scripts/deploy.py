@@ -39,7 +39,7 @@ class Lottery_class:
     def request_random_number(self, account = None):
         account = account if account else helpful_scripts.get_account()
         tx = self.lottery.generateRandomNumber( {"from" : account})
-        tx.wait(10)
+        tx.wait(5)
         print("random number:", self.lottery.getLastRandomNumber())
         return self.lottery.getLastRandomNumber()
     
@@ -71,7 +71,7 @@ class Lottery_class:
     def cancel_subscription(self, account = None):
         account = account if account else helpful_scripts.get_account()
         print("subscripton:", self.vrf_coordinator2.getSubscription(self.subscriptionId))
-        tx = self.cancelSubscription({"from" : account})
+        tx = self.lottery.cancelSubscription({"from" : account})
         tx.wait(5)
         print("subscripton:", self.vrf_coordinator2.getSubscription(self.subscriptionId))
 
