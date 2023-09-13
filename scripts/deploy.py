@@ -1,14 +1,11 @@
 from brownie import Lottery, interface, VRFCoordinatorV2Mock
 import scripts.helpful_scripts as helpful_scripts
-from brownie.network.gas.strategies import GasNowStrategy
-from brownie.network import gas_price
 
 
 
 class Lottery_class:
     def __init__(self, account = None):
         account = account if account else helpful_scripts.get_account()
-        self.gas_strategy = GasNowStrategy("fast")
 
         self._price_feed = helpful_scripts.get_price_feed_address()
 
@@ -87,6 +84,7 @@ def main():
     print("subscripton:", lottery.vrf_coordinator2.getSubscription(lottery.subscriptionId))
     input()
     lottery.request_random_number()
+    print("requestId:", lottery.lottery.getRequestId())
     print("random number:", lottery.lottery.getLastRandomNumber())
     print("subscripton:", lottery.vrf_coordinator2.getSubscription(lottery.subscriptionId))
     input()

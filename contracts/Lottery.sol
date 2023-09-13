@@ -14,6 +14,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     
     uint256 constant entranceFeeInUsd = 50*(10**18);
     address payable[] users;
+    address payable winner;
     uint256 randomNumber;
     
     bytes32 keyHash;
@@ -35,6 +36,8 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         CLOSED,
         CALCULATING
         }
+
+    LotteryState lotteryState = LotteryState.CLOSED;
 
     constructor(
         address _priceFeed,
@@ -61,15 +64,19 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         createNewSubscription();
 
         linkToken = LinkTokenInterface(_link);
-
-        //owner = msg.sender;
     }
     
-     function fulfillRandomWords(
+    function fulfillRandomWords(
         uint256 _requestId,
         uint256[] memory _randomWords
     ) internal override {
+        require(lotteryState == LotteryState.CALCULATING, "Lottery isnt calculating");
         randomNumber = _randomWords[0];
+        require(randomNumber > 0, "random-not-found");
+        uint256 winner_i = randomNumber % users.length;
+        winner = users[winner_i];
+        winner.transfer(address(this).balance);
+        lotteryState = LotteryState.CLOSED;
     }
 
     function setSubscription(uint64 _subscriptionId) public onlyOwner() {
@@ -130,8 +137,23 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         _;
     }
 
+    function openLottery() public onlyOwner() {
+        require(lotteryState == LotteryState.CLOSED, "Lottery cant be open");
+        lotteryState = LotteryState.OPEN;
+        users = new address payable[](0);
+        randomNumber = 0;
+        winner = payable(address(0));
+    }
+
     function entryLottery() public payable minimalEntryFee() {
-        //users.
+        require(lotteryState == LotteryState.OPEN, "Lottery isnt open");
+        users.push(payable(msg.sender));
+    }
+
+    function endLottery() public onlyOwner() {
+        require(lotteryState == LotteryState.OPEN, "Lottery cant be ended");
+        lotteryState = LotteryState.CALCULATING;
+        generateRandomNumber();
     }
 
     function getRequestId() public view returns(uint256) {
