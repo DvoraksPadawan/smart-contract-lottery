@@ -1,4 +1,4 @@
-from brownie import accounts, network, config, VRFCoordinatorV2Mock, MockV3Aggregator, MockLinkToken
+from brownie import accounts, network, config, VRFCoordinatorV2Mock, MockV3Aggregator, MockLinkToken, interface
 ACTIVE_NETWORKS = ["Sepolia"]
 
 def get_network():
@@ -21,41 +21,39 @@ def get_price_feed_address(decimals = 8, initial_value = 1500*10**8, i = 0):
         price_feed_mock = MockV3Aggregator.deploy(decimals, initial_value, {"from": account}).address
         return price_feed_mock
 
-def get_vrf_coordinator2_address(baseFee = 10**18, gasPriceLink = 10**9, i = 0):
+def get_vrf_coordinator2_contract(baseFee = 10**18, gasPriceLink = 10**9, i = 0):
     if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["vrf_coordinator2"]
+        vrf_coordinator_address = config["networks"][network.show_active()]["vrf_coordinator2"]
+        return interface.VRFCoordinatorV2Interface(vrf_coordinator_address)
     else:
         account = accounts[i]
-        vrf_mock = VRFCoordinatorV2Mock.deploy(baseFee, gasPriceLink, {"from": account}).address
+        vrf_mock = VRFCoordinatorV2Mock.deploy(baseFee, gasPriceLink, {"from": account})
         return vrf_mock
         
     
 def get_key_hash():
-    #if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["key_hash"]
+    return config["networks"][network.show_active()]["key_hash"]
     
 def get_subscriptionId():
     if network.show_active() in ACTIVE_NETWORKS:
         return config["networks"][network.show_active()]["subscriptionId"]
     
 def get_requestConfirmations():
-    #if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["requestConfirmations"]
+    return config["networks"][network.show_active()]["requestConfirmations"]
     
 def get_callbackGasLimit():
-    #if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["callbackGasLimit"]
+     return config["networks"][network.show_active()]["callbackGasLimit"]
     
 def get_numWords():
-    #if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["numWords"]
+     return config["networks"][network.show_active()]["numWords"]
     
-def get_link_address(i = 0):
+def get_link_contract(i = 0):
     if network.show_active() in ACTIVE_NETWORKS:
-        return config["networks"][network.show_active()]["link"]
+        link_address = config["networks"][network.show_active()]["link"]
+        return interface.LinkTokenInterface(link_address)
     else:
         account = accounts[i]
-        link_mock = MockLinkToken.deploy({"from": account}).address
+        link_mock = MockLinkToken.deploy({"from": account})
         return link_mock
     
 def get_publish_source():
