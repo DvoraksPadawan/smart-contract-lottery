@@ -7,12 +7,13 @@ import "@zeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "../interfaces/VRFCoordinatorV2Interface.sol";
 import "../interfaces/LinkTokenInterface.sol";
+import "./test/VRFCoordinatorV2Mock.sol";
 
 
 contract Lottery is VRFConsumerBaseV2, Ownable {
     AggregatorV3Interface priceFeed;
     
-    uint256 constant entranceFeeInUsd = 50*(10**18);
+    uint256 constant public entranceFeeInUsd = 50*(10**18);
     address payable[] users;
     address payable winner;
     uint256 randomNumber;
@@ -23,7 +24,10 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     uint32 callbackGasLimit;
     uint32 numWords;
 
-    VRFCoordinatorV2Interface vrfCoordinatorV2;
+    //for active network:
+    //VRFCoordinatorV2Interface vrfCoordinatorV2;
+    //for testnet:
+    VRFCoordinatorV2Mock vrfCoordinatorV2;
 
     LinkTokenInterface linkToken;
 
@@ -59,7 +63,10 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         callbackGasLimit = _callbackGasLimit;
         numWords = _numWords;
 
-        vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
+        //for active network:
+        //vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
+        //for testnet:
+        vrfCoordinatorV2 = VRFCoordinatorV2Mock(_vrfCoordinatorV2);
 
         createNewSubscription();
 
@@ -145,7 +152,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         winner = payable(address(0));
     }
 
-    function entryLottery() public payable minimalEntryFee() {
+    function enterLottery() public payable minimalEntryFee() {
         require(lotteryState == LotteryState.OPEN, "Lottery isnt open");
         users.push(payable(msg.sender));
     }
@@ -158,5 +165,9 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     function getRequestId() public view returns(uint256) {
         return _requestId;
+    }
+
+    function getUsers() public view returns(address payable[] memory) {
+        return users;
     }
 }
