@@ -55,7 +55,7 @@ def test_can_enter_lottery():
     users = lottery.lottery.getUsers()
     assert len(users) == 3
 
-def test_can_get_random_number():
+def test_cant_get_random_number():
     lottery = Lottery_class()
     account_0 = helpful_scripts.get_account(0)
     lottery.lottery.openLottery({"from": account_0})
@@ -63,15 +63,30 @@ def test_can_get_random_number():
     with pytest.raises(exceptions.VirtualMachineError):
         lottery.request_random_number()
     assert lottery.lottery.getLastRandomNumber() == 0
-    lottery.fund_with_link(amount)
-    lottery.request_random_number()
-    assert lottery.lottery.getLastRandomNumber() > 0
 
-def tes_can_make_winner():
+def test_can_make_winner():
     lottery = Lottery_class()
     account_0 = helpful_scripts.get_account(0)
     account_1 = helpful_scripts.get_account(1)
+    lottery.lottery.openLottery({"from": account_0})
     entry_fee = lottery.lottery.getFeeInEthWei()
     lottery.lottery.enterLottery({"from": account_0, "value": entry_fee})
     lottery.lottery.enterLottery({"from": account_1, "value": entry_fee})
     lottery.lottery.enterLottery({"from": account_0, "value": entry_fee})
+    assert lottery.lottery.balance() == 3*lottery.lottery.getFeeInEthWei()
+    with pytest.raises(exceptions.VirtualMachineError):
+        lottery.end_lottery()
+    amount = 20*(10**18)
+    lottery.fund_with_link(amount)
+    assert lottery.lottery.getLastRandomNumber() == 0
+    account = account_0
+    starting_balance = account.balance()
+    reward = lottery.lottery.balance()
+    assert len(lottery.lottery.getUsers()) > 0
+    lottery.end_lottery()
+    assert lottery.lottery.getLastRandomNumber() > 0
+    assert reward > 0
+    assert lottery.lottery.balance() == 0
+    assert account.balance() == starting_balance + reward
+    lottery.lottery.openLottery({"from": account_0})
+    assert len(lottery.lottery.getUsers()) == 0

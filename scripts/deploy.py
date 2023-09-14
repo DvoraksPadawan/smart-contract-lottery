@@ -45,6 +45,15 @@ class Lottery_class:
             return
         requestId = self.lottery.getRequestId()
         tx = self.vrf_coordinator2.fulfillRandomWords(requestId, self.lottery.address, {"from": account})
+
+    def end_lottery(self, account = None):
+        account = account if account else helpful_scripts.get_account()
+        tx = self.lottery.endLottery({"from": account})
+        if (helpful_scripts.get_network() in helpful_scripts.ACTIVE_NETWORKS):
+            tx.wait(5)
+            return
+        requestId = self.lottery.getRequestId()
+        tx = self.vrf_coordinator2.fulfillRandomWords(requestId, self.lottery.address, {"from": account})
         
 
     def cancel_subscription(self, account = None):

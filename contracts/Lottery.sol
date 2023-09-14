@@ -7,7 +7,6 @@ import "@zeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "../interfaces/VRFCoordinatorV2Interface.sol";
 import "../interfaces/LinkTokenInterface.sol";
-import "./test/VRFCoordinatorV2Mock.sol";
 
 
 contract Lottery is VRFConsumerBaseV2, Ownable {
@@ -24,10 +23,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     uint32 callbackGasLimit;
     uint32 numWords;
 
-    //for active network:
-    //VRFCoordinatorV2Interface vrfCoordinatorV2;
-    //for testnet:
-    VRFCoordinatorV2Mock vrfCoordinatorV2;
+    VRFCoordinatorV2Interface vrfCoordinatorV2;
 
     LinkTokenInterface linkToken;
 
@@ -63,15 +59,19 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
         callbackGasLimit = _callbackGasLimit;
         numWords = _numWords;
 
-        //for active network:
-        //vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
-        //for testnet:
-        vrfCoordinatorV2 = VRFCoordinatorV2Mock(_vrfCoordinatorV2);
+        vrfCoordinatorV2 = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
 
         createNewSubscription();
 
         linkToken = LinkTokenInterface(_link);
     }
+
+    // function fulfillRandomWords(
+    //     uint256 _requestId,
+    //     uint256[] memory _randomWords
+    // ) internal override {
+    //     randomNumber = _randomWords[0];
+    // }
     
     function fulfillRandomWords(
         uint256 _requestId,
@@ -158,7 +158,7 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
     }
 
     function endLottery() public onlyOwner() {
-        require(lotteryState == LotteryState.OPEN, "Lottery cant be ended");
+        require(lotteryState != LotteryState.CLOSED, "Lottery cant be ended");
         lotteryState = LotteryState.CALCULATING;
         generateRandomNumber();
     }
@@ -169,5 +169,9 @@ contract Lottery is VRFConsumerBaseV2, Ownable {
 
     function getUsers() public view returns(address payable[] memory) {
         return users;
+    }
+
+    function getWinner() public view returns(address payable) {
+        return winner;
     }
 }
