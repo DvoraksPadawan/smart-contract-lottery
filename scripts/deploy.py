@@ -61,7 +61,7 @@ class Lottery_class:
         tx = self.lottery.cancelSubscription({"from" : account})
         if (helpful_scripts.get_network() in helpful_scripts.ACTIVE_NETWORKS):
             tx.wait(5)
-        
+            
 
     def fund_with_link(self, amount, account = None):
         account = account if account else helpful_scripts.get_account()
@@ -78,6 +78,21 @@ class Lottery_class:
         tx.wait(5)
 
 
+    def enter_lottery(self, account = None):
+        account = account if account else helpful_scripts.get_account()
+        entry_fee = self.lottery.getFeeInEthWei()
+        tx = self.lottery.enterLottery({"from": account, "value": entry_fee})
+        if (helpful_scripts.get_network() in helpful_scripts.ACTIVE_NETWORKS):
+            tx.wait(5)
+
+    def open_lottery(self, account = None):
+        account = account if account else helpful_scripts.get_account()
+        self.lottery.openLottery({"from": account})
+
+
+
+
+
 
 
 #gas_price(gas_strategy)
@@ -92,10 +107,20 @@ def main():
     lottery.fund_with_link(20*(10**18))
     print("subscripton:", lottery.vrf_coordinator2.getSubscription(lottery.subscriptionId))
     input()
-    lottery.request_random_number()
+    lottery.open_lottery()
+    print("users:", lottery.lottery.getUsers())
+    lottery.enter_lottery()
+    lottery.enter_lottery(helpful_scripts.get_account(1))
+    print("users:", lottery.lottery.getUsers())
+    print("balance of contract:", lottery.lottery.balance())
+    input()
+    lottery.end_lottery()
     print("requestId:", lottery.lottery.getRequestId())
     print("random number:", lottery.lottery.getLastRandomNumber())
     print("subscripton:", lottery.vrf_coordinator2.getSubscription(lottery.subscriptionId))
+    print("winner:", lottery.lottery.getWinner())
+    print("balance:", helpful_scripts.get_account(1).balance())
+    print("balance of contract:", lottery.lottery.balance())
     input()
     lottery.cancel_subscription()
     #print("subscripton:", lottery.vrf_coordinator2.getSubscription(lottery.subscriptionId))
